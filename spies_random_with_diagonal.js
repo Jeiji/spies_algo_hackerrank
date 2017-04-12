@@ -105,7 +105,7 @@ for (let i = 0; i < n; i++) {
     rando = chooseRandCol( n )
   }
   grid[i][rando] = ' S ';
-  console.log(`\n\n\n\n\n PLACED A SPY!!!! ( [ ${ j } , ${ i } ] )`);
+  console.log(`\n\n\n\n\n PLACED A SPY!!!! ( [ ${ rando } , ${ i } ] )`);
   points.push( [ rando , i ] );
   ln2 += ( ( rando + 1) + " " )
   spyFree( grid , i , rando , points );
