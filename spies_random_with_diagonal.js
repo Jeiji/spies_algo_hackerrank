@@ -26,14 +26,14 @@ if ( row > 0 ) {
     let m = 1;
     while ( grid[row + yDif*m] && grid[row + yDif*m][col + xDif*m] && points[o][1] !== row ) {
       grid[row + yDif*m][col + xDif*m] = '|X|'
-      console.log(`found a slope!( from [${ points[o] }] to [ ${ col } , ${ row } ] )`);
+      // console.log(`found a slope!( from [${ points[o] }] to [ ${ col } , ${ row } ] )`);
       // console.log(grid);
       // memo[row][1].push( [col + xDif*m , row + yDif*m] )
       // console.log('This is memo:',memo);
       m++
     }
   }
-  console.log(`Done with slopes for this one...`);
+  // console.log(`Done with slopes for this one...`);
   // console.log(grid);
 }
 
@@ -79,7 +79,7 @@ for (let i = 0; i < n; i++) {
   for ( j = 0; j < n; j++) {
     if ( grid[i][j] == "|||" || grid[i][j] == "|X|" ) {
       tallyBlockedSpaces += 1;
-      console.log(`in tallyBlockedSpaces`, tallyBlockedSpaces);
+      // console.log(`in tallyBlockedSpaces`, tallyBlockedSpaces);
     }
   }
   if ( tallyBlockedSpaces == n ) {
