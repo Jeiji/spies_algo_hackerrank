@@ -62,10 +62,10 @@ let rand = Math.floor(Math.random() * ( n - 0 ) );
 return rand
 }
 
-function spyDrop( n , fails ) {
-if ( !fails ) {
-fails = 0;
-}
+function spyDrop( n ) {
+// if ( !fails ) {
+// fails = 0;
+// }
 let grid = printGrid( n ),
 rando, tallyBlockedSpaces = 0 , ln1 = "" , ln2 = "";
 ln1 += n;
@@ -91,7 +91,7 @@ for (let i = 0; i < n; i++) {
     fails += 1;
     //console.log(`\n----------------------------------------------------------------------------------------\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n----------------------------------------------------------------------------------------\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
     points = [];
-    return spyDrop( n , fails );
+    return false;
   }
   tallyBlockedSpaces = 0;
 
@@ -112,6 +112,7 @@ for (let i = 0; i < n; i++) {
   // console.log(grid);
 }
 console.log('\n Got it!');
+successful = true;
 for (let i = 0; i < grid.length; i++) {
 console.log(grid[i]);
 }
@@ -119,4 +120,8 @@ console.log(`\n\n\nFailures before success: ${ fails }`);
 console.log( ln1,'\n',ln2 );
 }
 
-spyDrop( 999 );
+let successful = false;
+
+while( !successful ){
+  spyDrop( 999 );
+}
