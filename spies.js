@@ -19,6 +19,7 @@ let alreadyBlocked = false;
 let blockages = 0;
 let successChain = 0;
 let newRetry = false;
+let retry = 0;
 
 
 function spyFree( grid , row , col , points ) {
@@ -32,7 +33,10 @@ function spyFree( grid , row , col , points ) {
       // let slope =  ( row - coorY / col - coorX );
       let m = 1;
       while ( grid[row + yDif*m] && grid[row + yDif*m][col + xDif*m] && points[o][1] !== row ) {
-        grid[row + yDif*m][col + xDif*m] = '|X|'
+        if ( ( row + yDif*m ) > row ) {
+          grid[row + yDif*m][col + xDif*m] = '|X|'
+        }
+
         // console.log(`found a slope!( from [${ points[o] }] to [ ${ col } , ${ row } ] )`);
         // console.log(grid);
         memo[row][1].push( [col + xDif*m , row + yDif*m] )
@@ -77,48 +81,47 @@ function spyDrop( n , fails ) {
     rando, tallyBlockedSpaces = 0 , ln1 = "" , ln2 = "";
     ln1 += n;
     let marker = [];
+    let redoChk = 0;
+    let placeSpyHere = 0;
+    let trapped = false;
   // Get to a row...
   for (let i = 0; i < n; i++) {
     console.log(`\N\N\N\N\N FROM THE TOP`);
+    tallyBlockedSpaces = 0;
       // Drop a spy...
       /////////// Safety Check ///////////
         for ( j = 0; j < n; j++) {
+          console.log(`\nThis is I:${ i } and J: ${ j }`);
           if ( alreadyBlocked ) {
             j+=fails;
             alreadyBlocked = false;
           }
-          if ( grid[i][j] == "|||" || grid[i][j] == "|X|" || grid[i][j] == "|R|" ) {
+          if ( trapped ) {
+            j = trapped
+            trapped = false;
+          }
+          if ( grid[i][j] == "|||" || grid[i][j] == "|X|" || grid[i][j] == "|R|" || grid[i][j] == "|T|" ) {
+            if ( grid[i][j] == "|R|" ) {
+              redoChk += 1;
+              console.log(`Logging a redo...`);
+            }
             tallyBlockedSpaces += 1;
-            console.log(`This is I:${ i } and J: ${ j}`);
+            console.log(`This is I:${ i } and J: ${ j }`);
 
             console.log('tallies',tallyBlockedSpaces);
             // tallyBlockedSpaces += 1;
             // console.log(`in tallyBlockedSpaces`, tallyBlockedSpaces);
-          }
-          else {
-            console.log('Found a spot! Placing...');
-            grid[i][j] = ' S ';
-            successChain += 1;
-            if (blockages > 0 && successChain > 2) {
-              blockages -= 1;
-            }
-            memo.push([[ j , i ],[]])
-            coordinates.push( [ j , i ] );
-            // ln2 += ( ( j + 1) + " " )
-            spyFree( grid , i , j , coordinates );
-            console.log(`\n`,grid);
-            tallyBlockedSpaces = 0;
+          }else{
+            placeSpyHere = j;
+            console.log(`\n\n\n J IS: ${ j }`);
             break;
           }
         }
-        if ( tallyBlockedSpaces == n ) {
 
+
+        if ( tallyBlockedSpaces == n ) {
+          console.log('\nRe-do!!!!!!!!!!!!!!!!');
           successChain = 0;
-          if (successChain < 4) {
-            blockages += 1;
-          }
-          console.log(`Blockages: ${ blockages }`);
-          console.log(`successChain: ${ successChain }`);
           if ( blockages >= n ) {
             console.log(`\n\n\n\nTOOOOO MUUUUCH BLOCKAGE Let's try another x...`);
             tallyBlockedSpaces = 0;
@@ -132,6 +135,7 @@ function spyDrop( n , fails ) {
           }
           if ( redos[0] ) {
             // console.log(redos);
+            console.log( `clearing [ ${redos[redos.length-1][1]  } , ${ redos[redos.length-1][0] } ] ( ${ grid[redos[redos.length-1][1]][redos[redos.length-1][0]] } )` );
             grid[redos[redos.length-1][1]][redos[redos.length-1][0]] = '| |'
           }
           redos.pop();
@@ -142,12 +146,18 @@ function spyDrop( n , fails ) {
           //console.log(grid);
 
           //console.log(`\n----------------------------------------------------------------------------------------\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n----------------------------------------------------------------------------------------\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-          console.log('\nRe-do!!!!!!!!!!!!!!!!');
-          console.log( 'memo[i-1]',memo[i-1],'\n' );
+
+          console.log(`retries: ${retry}`);
+          retry+=1
+
+          // console.log( 'memo',memo,'\n' );
+          // console.log( 'memo[i-1]',memo[i-1],'\n' );
+          // console.log( 'i-1',i-1,'\n' );
           for (q = 0; q < memo[i-1][1].length; q++) {
             grid[memo[i-1][1][q][1]][memo[i-1][1][q][0]] = '| |';
             // console.log( memo[i-1][1][q] );
           }
+          memo.pop();
           for (let i = 0; i < memo.length; i++) {
               spyFree( grid , memo[i][0][1] , memo[i][0][0] , coordinates )
           }
@@ -156,18 +166,71 @@ function spyDrop( n , fails ) {
             for ( d = 0; d < n; d++) {
               if ( grid[e][d] == ' S ' ) {
                 grid[e][d] = '|R|'
-                memo.pop();
                 redos.push( [ d , e ] );
-                j = d+1;
                 console.log(`\n`,grid);
-                i--;
-                break;
               }
             }
           }
-          i--;
+          i-=2;
+          continue;
+        }
+        if ( ( ( tallyBlockedSpaces >= (n - 2) ) && redoChk > 0 ) ){
+        console.log(`\n\n\n\n TRAPPED! \n\n\n\n`);
+        console.log(`Success Chain: ${successChain}`);
+        console.log(`retries: ${retry}`);
+        retry -= 1;
+          if ( redos[0] ) {
+            grid[redos[redos.length-1][1]][redos[redos.length-1][0]] = '| |'
+          }
+          redos.pop();
+          for (q = 0; q < memo[i-1][1].length; q++) {
+            grid[memo[i-1][1][q][1]][memo[i-1][1][q][0]] = '| |';
+            // console.log( `clearing [ ${memo[i-1][1][q][1]  } , ${ memo[i-1][1][q][0] } ]` );
+            // console.log(q);
+          }
+          memo.pop();
+          for (let i = 0; i < memo.length; i++) {
+              spyFree( grid , memo[i][0][1] , memo[i][0][0] , coordinates )
+          }
+          // console.log( memo[i-1] );
+          for ( e = i-1; e < n; e++) {
+            for ( d = 0; d < n; d++) {
+              if ( grid[e][d] == ' S ' ) {
+                grid[e][d] = '|T|'
+                trapped = d;
+                // redos.push( [ d , e ] );
+                console.log(`\n`,grid);
+              }
+            }
+          }
+          tallyBlockedSpaces = 0;
+          redoChk = 0;
+          i -= 2;
+          continue;
+          }
 
-        tallyBlockedSpaces = 0;
+          if ( placeSpyHere > -1 ) {
+            successChain += 1;
+            console.log('Found a spot! Placing...');
+            if ( retry > 0 && successChain > n/2) {
+              retry -= 1;
+            }
+            grid[i][placeSpyHere] = ' S ';
+            if (blockages > 0 && successChain > 2) {
+              blockages -= 1;
+            }
+            memo.push([[ placeSpyHere , i ],[]])
+            coordinates.push( [ j , i ] );
+            // ln2 += ( ( j + 1) + " " )
+            spyFree( grid , i , j , coordinates );
+            console.log(`\n`,grid);
+            tallyBlockedSpaces = 0;
+            placeSpyHere = -1;
+            redoChk = 0;
+          }
+
+
+
         }
 
       ///////////////////////////////////
@@ -183,7 +246,7 @@ function spyDrop( n , fails ) {
       // coordinates.push( [ rando , i ] );
       // ln2 += ( ( rando + 1) + " " )
       // spyFree( grid , i , rando , coordinates );
-    }
+
   console.log('\n Got it!');
   for (let i = 0; i < grid.length; i++) {
     console.log(grid[i]);
@@ -196,4 +259,4 @@ function spyDrop( n , fails ) {
   console.log( ln2 );
 }
 
-spyDrop( 7 );
+spyDrop( 9 );

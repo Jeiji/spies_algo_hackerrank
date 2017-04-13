@@ -122,7 +122,8 @@ console.log( ln1,'\n',ln2 );
 
 let successful = false;
 let fails = 0;
+let closest = 0;
 
 while( !successful ){
-  spyDrop( 999 );
+  spyDrop( 13 );
 }
