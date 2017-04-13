@@ -202,4 +202,4 @@ function deployAgents( n , sanity ) {
 
 }
 
-deployAgents( 31 );
+deployAgents( 31 , 5 );
