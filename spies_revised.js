@@ -1,4 +1,5 @@
 
+let retractions = 0;
 
 function printMatrix( n ) {
   let matrix = [];
@@ -97,6 +98,8 @@ function dropAgent( matrix , row , col , listedAgents ){
 function retractAgent( matrix , agentToRemove , listedAgents ){
   // console.log(`\nRetracting agent...`);
 
+  retractions += 1;
+
   let row = agentToRemove[0];
   let col = agentToRemove[1];
 
@@ -134,12 +137,13 @@ function deployAgents( n , sanity ) {
   let agentList = [];
   let agentDroppedThisRound = false
   let currentRow = 0;
+  let doomed = false;
 
   // Loop through matrix to find an opening
   for ( let i = 0 ; i < n ; i++ ) {
     // console.log(`\nChecking for openings on row ${ i }`);
     for ( let j = 0; j < n; j++){
-
+      doomed = false;
       // Just for sanity's sake... try not putting first agent at 0,0...
       if ( sanity && i == 0 ) {
         j += (sanity-1);
@@ -155,10 +159,39 @@ function deployAgents( n , sanity ) {
       }
     }
 
+    // To help reduce inevitable retractions, check to see if any rows, starting from the very last, are completely blocked out. If so, let's set a variable to true so that the retraction function gets triggered. It stops two rows after the current row.
+    if ( agentDroppedThisRound ) {
+      for (let c = n-1 ; c > i+1 ; c--) {
+        // console.log(`Checking for doom... for row ${ c } `);
+        let openings = 0;
+        for (let j = 0; j < n; j++) {
+          // See an opening in this row? Tally up.
+          if ( matrix[c][j] == '| |' ) {
+            openings += 1;
+          }
+        }
+        // console.log(`openngs${openings}`);
+        // If you get to the end of the row and there aren't any openings... WE'RE DOOMED.
+        if ( openings < 1 ) {
+          console.log(`WE'RE DOOMED!! ( Blocked row ${ c } )\n`);
+          // console.log(`current row on... ${ i }`);
+          doomed = true;
+          break;
+        }
+      }
+      if ( !doomed ) {
+        // console.log(`Not doomed!`);
+      }
+    }
 
     // Also, if you get out of the loop, then all the spaces were taken retract prior agent and retry placing in the next column.
-    if ( !agentDroppedThisRound ) {
-      // console.log(`NO OPENINGS IN ROW ${ i }`);
+    if ( !agentDroppedThisRound || doomed ) {
+      if ( doomed ) {
+        i += 1;
+      }else{
+        // console.log(`NO OPENINGS IN ROW ${ i }`);
+      }
+
       // And most importantly... if you've reached the end of the first row, then there's NO SOLUTION!
       if ( i == 0 ) {
         console.log(`\n!!!!!!!NO SOLUTION`);
@@ -166,6 +199,7 @@ function deployAgents( n , sanity ) {
         return;
       }
       let agentToRemove = agentList[agentList.length-1][0];
+      // console.log(`current row: ${i}`);
       retractAgent( matrix , agentToRemove , agentList );
 
       // If you get to the end of the loop and you have retracted spots, you should clear them.
@@ -196,10 +230,11 @@ function deployAgents( n , sanity ) {
     }
   }
 
-  console.log(`\nDone! Here's the solution:`);
-  console.log(matrix);
+  // console.log(`\nDone! Here's the solution:`);
+  // console.log(matrix);
+  console.log(`\nAfter ${ retractions } retractions.\n`);
   console.log(`\n`,ln1,`\n`,ln2);
 
 }
 
-deployAgents( 31 , 5 );
+deployAgents( 31 , 1 );
