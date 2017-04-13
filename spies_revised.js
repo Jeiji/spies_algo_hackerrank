@@ -52,16 +52,22 @@ function blockSpaces( matrix , newAgentRow , newAgentCol , listedAgents ) {
     for ( let j = 0; j < matrix.length ; j++) {
       // Check for verticals
       if ( j == newAgentCol ) {
-        matrix[i][j] = '|||'
+        if ( matrix[i][j] == '| |' ) {
+            matrix[i][j] = '|||'
+        }
         listedAgents[newAgentRow][1].push( [ i , j ] )
       }
       // Check for diagonals
       if ( j == newAgentCol + slope ) {
-        matrix[i][j] = '|||'
+        if ( matrix[i][j] == '| |' ) {
+            matrix[i][j] = '|||'
+        }
         listedAgents[newAgentRow][1].push( [ i , j ] )
       }
       if ( j == newAgentCol - slope ) {
-        matrix[i][j] = '|||'
+        if ( matrix[i][j] == '| |' ) {
+            matrix[i][j] = '|||'
+        }
         listedAgents[newAgentRow][1].push( [ i , j ] )
       }
     }
@@ -80,14 +86,16 @@ function dropAgent( matrix , row , col , listedAgents ){
   // Add this agent to the list to use as info for placing other agents (preloaded with an empty array to hold all of the future collaterally affected spaces)
   listedAgents.push( [ newAgent , [newAgent] ] );
   console.log(`\nAGENT PLANTED at [ ${ row } , ${ col } ]!`);
-  // console.log( matrix );
+
 
   // Block off any spots that would blow cover for other agents
   blockSpaces( matrix , row , col , listedAgents );
+  // console.log(`\nMatrix after block-outs...`);
+  // console.log( matrix );
 };
 
 function retractAgent( matrix , agentToRemove , listedAgents ){
-  console.log(`\nRetracting agent...`);
+  // console.log(`\nRetracting agent...`);
 
   let row = agentToRemove[0];
   let col = agentToRemove[1];
@@ -111,7 +119,7 @@ function retractAgent( matrix , agentToRemove , listedAgents ){
   }
 
   //Should replace the agent's "S" with an "R"
-  console.log(`Agent to remove: ` , agentToRemove);
+  console.log(`\nAgent to remove: ` , agentToRemove);
   matrix[row][col] = '|R|';
 
   // console.log(`Here's the current matrix after retraction:`); console.log(matrix);
@@ -119,7 +127,7 @@ function retractAgent( matrix , agentToRemove , listedAgents ){
 
 
 
-function deployAgents( n ) {
+function deployAgents( n , sanity ) {
   // Write the matrix
   let matrix = printMatrix( n );
 
@@ -129,7 +137,14 @@ function deployAgents( n ) {
 
   // Loop through matrix to find an opening
   for ( let i = 0 ; i < n ; i++ ) {
+    // console.log(`\nChecking for openings on row ${ i }`);
     for ( let j = 0; j < n; j++){
+
+      // Just for sanity's sake... try not putting first agent at 0,0...
+      if ( sanity && i == 0 ) {
+        j += (sanity-1);
+      }
+
       agentDroppedThisRound = false;
 
       // If the spot's open, plant and move to next row
@@ -141,33 +156,33 @@ function deployAgents( n ) {
     }
 
 
-
-    // If you get to the end of the loop and you have retracted spots, you should clear them.
-    if ( matrix[i+1] ) {
-      for (let k = 0; k < n; k++) {
-        if ( matrix[i+1][k] == '|R|' ) {
-          // console.log(`Removing next-row retraction...( ${ i+1 } , ${ k } )`);
-          matrix[i+1][k] = '| |'
-          // console.log(matrix);
-        }
-      }
-    }
-
-
     // Also, if you get out of the loop, then all the spaces were taken retract prior agent and retry placing in the next column.
     if ( !agentDroppedThisRound ) {
+      // console.log(`NO OPENINGS IN ROW ${ i }`);
       // And most importantly... if you've reached the end of the first row, then there's NO SOLUTION!
       if ( i == 0 ) {
         console.log(`\n!!!!!!!NO SOLUTION`);
-        console.log(matrix);
+        // console.log(matrix);
         return;
       }
       let agentToRemove = agentList[agentList.length-1][0];
       retractAgent( matrix , agentToRemove , agentList );
+
+      // If you get to the end of the loop and you have retracted spots, you should clear them.
+      if ( matrix[i] ) {
+        for (let k = 0; k < n; k++) {
+          // console.log(matrix[i][k]);
+          if ( matrix[i][k] == '|R|' ) {
+            // console.log(`Removing next-row retraction...( ${ i } , ${ k } )`);
+            matrix[i][k] = '| |'
+            // console.log(matrix);
+          }
+        }
+      }
       i-=2;
     }
 
-    // console.log(`Finished this round. Here's the matrix:`);
+    // console.log(`Finished this round.`);
     // console.log(matrix);
   }
   let ln1 = n, ln2 = '';
@@ -187,4 +202,4 @@ function deployAgents( n ) {
 
 }
 
-deployAgents( 9 );
+deployAgents( 31 );

@@ -125,5 +125,5 @@ let fails = 0;
 let closest = 0;
 
 while( !successful ){
-  spyDrop( 13 );
+  spyDrop( 31 );
 }
